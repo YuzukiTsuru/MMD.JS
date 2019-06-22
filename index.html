@@ -245,7 +245,7 @@
         loader = new THREE.MMDLoader();
         console.log('Load model');
 
-        loader.load('models/box_len_1.2/box_len.pmd', ['muni.vmd'], function (object) {
+        loader.load('models/box_len_1.2/box_len.pmd', ['data/muni.vmd'], function (object) {
 
             console.log('Load model ......Done');
 
@@ -257,7 +257,7 @@
 
             console.log('Load Music');
 
-            loader.loadAudio('muni.m4a', function (audio, listener) {
+            loader.loadAudio('data/muni.m4a', function (audio, listener) {
 
                 console.log('Load Music .......Done');
 
@@ -280,12 +280,33 @@
             }, function (xhr) {
             });
 
+            loader2 = new THREE.ImageLoader();
+            loader2.load('data/background.png', function (image) {
+                const texLoader = new THREE.TextureLoader();
+                texLoader.load(image.src, function (loaded) {
+                    const segmentNumber = 100; // SkyBox segment
+                    tex = loaded;
+                    tex.minFilter = tex.magFilter = THREE.LinearFilter;
+                    //  You have to decide the space radius in consideration of the model -> change the model side.
+                    sphereGeometry = new THREE.SphereGeometry(16, segmentNumber, segmentNumber); // The scale on the MMDLoader side can not be changed so far
+                    const matrix = new THREE.Matrix4().makeScale(1, 1, -1);
+                    sphereGeometry.applyMatrix(matrix);
+                    lastSphereRotation = sp.sphereRotation;
+                    const sphereRotationY = new THREE.Matrix4().makeRotationY((90 + sp.sphereRotation) * Math.PI / 180.0);
+                    sphereGeometry.applyMatrix(sphereRotationY);
+                    mesh = new THREE.Mesh(sphereGeometry, new THREE.MeshBasicMaterial({map: tex, overdraw: true}));
+                    mesh.receiveShadow = false; // Object object that receives shadow (it does not create shadow by receive alone)
+                    scene.add(mesh);
+                });
+            });
+
             json.position.set(sp.objectX, sp.objectY, sp.objectZ); // Object position
             json.overdraw = true;
             json.castShadow = false; // Object object that makes shadow (cast alone does not cast shadow) MMDLoader does not support shadow yet
 
             console.log('Init Done \nPlay Start');
         });
+
 
         // Renderer
         renderer.setSize(width, height);
