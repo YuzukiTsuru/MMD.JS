@@ -1,350 +1,226 @@
+<!DOCTYPE html>
 <html lang="en">
-<meta charset="utf-8">
-<style>
-    html, body {
-        height: 100%;
-        overflow: hidden;
-    }
+<head>
+    <title></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            font-family: Monospace;
+            background-color: #fff;
+            color: #000;
+            margin: 0px;
+            overflow: hidden;
+        }
 
-    body {
-        margin: 0;
-    }
+        #info {
+            color: #000;
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            display: block;
+        }
+    </style>
+</head>
 
-</style>
 <body>
-<script src="js/jquery.min.js"></script>
-<script src="js/dat.gui.js"></script>
-<script src="js/three.min.js"></script>
-<script src="js/OrbitControls.js"></script>
-<script src="js/charsetencoder.min.js"></script>
+<div id="info">
+</div>
+
+<script src="js/three.js"></script>
+<script src="js/mmdparser.min.js"></script>
 <script src="js/ammo.min.js"></script>
+
 <script src="js/TGALoader.js"></script>
 <script src="js/MMDLoader.js"></script>
+<script src="js/OutlineEffect.js"></script>
 <script src="js/CCDIKSolver.js"></script>
 <script src="js/MMDPhysics.js"></script>
+
+<script src="js/Detector.js"></script>
+
 <script>
-    $(init);
 
-    let animateCurrnetTime;
-    const SceneParams = function () {
-        // Control
-        this.debug = false;
-        // Camera
-        this.cameraFov = 100;
-        this.cameraX = -0.0;
-        this.cameraY = -0.0;
-        this.cameraZ = 10.0;
-        // Light
-        this.lightIntensity = 0.4;
-        this.lightX = 100;
-        this.lightY = 100;
-        this.lightZ = -100;
-        this.lightColor = "#ffffff";
-        this.lightCastShadow = false;
-        this.lightShadowDarkness = 0;
-        // Light2
-        this.light2Intensity = 0.4;
-        this.light2X = -100;
-        this.light2Y = 100;
-        this.light2Z = -100;
-        this.light2Color = "#ffffff";
-        this.light2CastShadow = false;
-        this.light2ShadowDarkness = 0;
-        // Light3
-        this.light3Intensity = 0.25;
-        this.light3X = 300;
-        this.light3Y = 300;
-        this.light3Z = 300;
-        this.light3Color = "#ffc969";
-        this.light3CastShadow = false;
-        this.light3ShadowDarkness = 0;
-        // AmbientLight
-        this.ambientLightColor = "#d2d2d2";
-        // Object
-        this.objectX = -0.25;
-        this.objectY = -9.0;
-        this.objectZ = 0.0;
-        // Sphere
-        this.sphereRotation = 0;
-        // Operation
-        this.stop = function () {
-            action.stop();
-            animateCurrnetTime = 0;
-            $audio.get(0).pause();
-        };
-        this.start = function () {
-            action.stop();
-            animateCurrnetTime = 0;
-            $audio.get(0).load();
-            action.play();
-            $audio.get(0).play();
-        };
-    };
+    let container;
 
-    let ready = false;
+    let mesh, camera, scene, renderer, effect;
     let helper;
 
+    var ready = false;
+
+    var mouseX = 0, mouseY = 0;
+
+    var windowHalfX = window.innerWidth / 2;
+    var windowHalfY = window.innerHeight / 2;
+
+    var clock = new THREE.Clock();
+
+    init();
+    animate();
+
     function init() {
-        // Parameter change GUI
 
-        console.log('Init With parameter');
+        container = document.createElement('div');
+        document.body.appendChild(container);
 
-        const sp = new SceneParams();
-        const gui = new dat.GUI();
-        const cp = gui.addFolder('Camera');
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
 
-        // control box show/hide
-        controlbox(sp.debug);
-
-        cp.add(sp, 'cameraFov').min(0).max(180).onChange(function (value) {
-            camera.fov = value;
-            camera.updateProjectionMatrix();
-        });
-        cp.add(sp, 'cameraX').min(-300).max(300).step(0.5).onChange(function (value) {
-            camera.position.x = value;
-        });
-        cp.add(sp, 'cameraY').min(-300).max(300).step(0.5).onChange(function (value) {
-            camera.position.y = value;
-        });
-        cp.add(sp, 'cameraZ').min(-300).max(300).step(0.5).onChange(function (value) {
-            camera.position.z = value;
-        });
-        const l1p = gui.addFolder('Light1');
-        l1p.add(sp, 'lightIntensity').onChange(function (value) {
-            light.intensity = value;
-        });
-        l1p.add(sp, 'lightX').min(-300).max(300).step(0.5).onChange(function (value) {
-            light.position.x = value;
-        });
-        l1p.add(sp, 'lightY').min(-300).max(300).step(0.5).onChange(function (value) {
-            light.position.y = value;
-        });
-        l1p.add(sp, 'lightZ').min(-300).max(300).step(0.5).onChange(function (value) {
-            light.position.z = value;
-        });
-        l1p.addColor(sp, 'lightColor').onChange(function (value) {
-            value = value.replace('#', '0x');
-            light.color.setHex(value);
-        });
-        l1p.add(sp, 'lightCastShadow').onChange(function (value) {
-            light.castShadow = value;
-        });
-        l1p.add(sp, 'lightShadowDarkness').onChange(function (value) {
-            light.shadowDarkness = value;
-        });
-        const l2p = gui.addFolder('Light2');
-        l2p.add(sp, 'light2Intensity').onChange(function (value) {
-            light2.intensity = value;
-        });
-        l2p.add(sp, 'light2X').min(-300).max(300).step(0.5).onChange(function (value) {
-            light2.position.x = value;
-        });
-        l2p.add(sp, 'light2Y').min(-300).max(300).step(0.5).onChange(function (value) {
-            light2.position.y = value;
-        });
-        l2p.add(sp, 'light2Z').min(-300).max(300).step(0.5).onChange(function (value) {
-            light2.position.z = value;
-        });
-        l2p.addColor(sp, 'light2Color').onChange(function (value) {
-            value = value.replace('#', '0x');
-            light2.color.setHex(value);
-        });
-        l2p.add(sp, 'light2CastShadow').onChange(function (value) {
-            light2.castShadow = value;
-        });
-        l2p.add(sp, 'light2ShadowDarkness').onChange(function (value) {
-            light2.shadowDarkness = value;
-        });
-        const l3p = gui.addFolder('Light3');
-        l3p.add(sp, 'light3Intensity').onChange(function (value) {
-            light3.intensity = value;
-        });
-        l3p.add(sp, 'light3X').min(-300).max(300).step(0.5).onChange(function (value) {
-            light3.position.x = value;
-        });
-        l3p.add(sp, 'light3Y').min(-300).max(300).step(0.5).onChange(function (value) {
-            light3.position.y = value;
-        });
-        l3p.add(sp, 'light3Z').min(-300).max(300).step(0.5).onChange(function (value) {
-            light3.position.z = value;
-        });
-        l3p.addColor(sp, 'light3Color').onChange(function (value) {
-            value = value.replace('#', '0x');
-            light3.color.setHex(value);
-        });
-        l3p.add(sp, 'light3CastShadow').onChange(function (value) {
-            light3.castShadow = value;
-        });
-        l3p.add(sp, 'light3ShadowDarkness').onChange(function (value) {
-            light3.shadowDarkness = value;
-        });
-        const alp = gui.addFolder('AmbientLight');
-        alp.addColor(sp, 'ambientLightColor').onChange(function (value) {
-            value = value.replace('#', '0x');
-            ambientLight.color.setHex(value);
-        });
-        const ob = gui.addFolder('Object');
-        ob.add(sp, 'objectX').min(-300).max(300).onChange(function (value) {
-            json.position.x = value;
-        });
-        ob.add(sp, 'objectY').min(-300).max(300).onChange(function (value) {
-            json.position.y = value;
-        });
-        ob.add(sp, 'objectZ').min(-300).max(300).onChange(function (value) {
-            json.position.z = value;
-        });
-        const sph = gui.addFolder('Sphere');
-        sph.add(sp, 'sphereRotation').min(-180).max(180).onChange(function (value) {
-            mesh.rotation.y += (value - lastSphereRotation) * Math.PI / 180.0;
-            lastSphereRotation = value;
-        });
-
-        console.log('Init With parameter ......Done');
+        // scene
 
         scene = new THREE.Scene();
 
-        clock = new THREE.Clock();
+        var ground = new THREE.Mesh(
+            new THREE.PlaneBufferGeometry(100, 100),
+            new THREE.MeshPhongMaterial({color: 0xdddddd})
+        );
+        ground.rotation.x = -90 * Math.PI / 180;
+        ground.receiveShadow = true;
+        scene.add(ground);
 
-        const width = $(window).width();
-        const height = $(window).height();
+        var ambient = new THREE.AmbientLight(0x666666);
+        scene.add(ambient);
 
-        // Camera
-        camera = new THREE.PerspectiveCamera(sp.cameraFov, width / height);
-        camera.position.x = sp.cameraX;
-        camera.position.y = sp.cameraY;
-        camera.position.z = sp.cameraZ;
-        scene.add(camera);
+        var directionalLight = new THREE.DirectionalLight(0x887766);
+        directionalLight.position.set(-15, 15, 15);
+        scene.add(directionalLight);
 
+        //
 
-        // Light and Shadow
-        light = new THREE.DirectionalLight(eval(sp.lightColor.replace('#', '0x')), sp.lightIntensity);
-        light.position.set(sp.lightX, sp.lightY, sp.lightZ);
-        light.castShadow = sp.lightCastShadow; // Shadow glory
-        light.shadowMapWidth = 2048; // Shadow mapping detail
-        light.shadowMapHeight = 2048; // Shadow mapping detail
-        light.shadowDarkness = sp.lightShadowDarkness; // Darkness of shadow
-        scene.add(light);
-        light2 = new THREE.DirectionalLight(eval(sp.light2Color.replace('#', '0x')), sp.light2Intensity);
-        light2.position.set(sp.light2X, sp.light2Y, sp.light2Z);
-        light2.castShadow = sp.light2CastShadow; // Make the light cast a shadow
-        light2.shadowMapWidth = 2048; // Shadow mapping detail
-        light2.shadowMapHeight = 2048; // Shadow mapping detail
-        light2.shadowDarkness = sp.light2ShadowDarkness; // Darkness of shadow
-        scene.add(light2);
-        light3 = new THREE.DirectionalLight(eval(sp.light3Color.replace('#', '0x')), sp.light3Intensity);
-        light3.position.set(sp.light3X, sp.light3Y, sp.light3Z);
-        light3.castShadow = sp.light3CastShadow; // Make the light cast a shadow
-        light3.shadowMapWidth = 2048; // Shadow mapping detail
-        light3.shadowMapHeight = 2048; // Shadow mapping detail
-        light3.shadowDarkness = sp.light3ShadowDarkness; // Darkness of shadow
-        scene.add(light3);
-        ambientLight = new THREE.AmbientLight(eval(sp.ambientLightColor.replace('#', '0x')));
-        scene.add(ambientLight); // Ambient light
+        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(new THREE.Color(0xffffff));
+        container.appendChild(renderer.domElement);
 
-        // Renderer
-        renderer = new THREE.WebGLRenderer();
+        effect = new THREE.OutlineEffect(renderer);
 
-        // object load
-        helper = new THREE.MMDHelper(renderer);
-        loader = new THREE.MMDLoader();
-        console.log('Load model');
+        // Shadow parameters
+        renderer.shadowMap.enabled = true;
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.x = 1024;
+        directionalLight.shadow.mapSize.y = 1024;
+        directionalLight.shadow.camera.right = 20;
+        directionalLight.shadow.camera.top = 20;
+        directionalLight.shadow.camera.left = -20;
+        directionalLight.shadow.camera.bottom = -20;
 
-        loader.load('models/box_len_1.2/box_len.pmd', ['data/muni.vmd'], function (object) {
+        // Model specific Shadow parameters
+        renderer.shadowMap.renderSingleSided = false;
+        renderer.shadowMap.renderReverseSided = false;
+        directionalLight.shadow.bias = -0.001;
 
-            console.log('Load model ......Done');
+        var onProgress = function (xhr) {
+            if (xhr.lengthComputable) {
+                var percentComplete = xhr.loaded / xhr.total * 100;
+                console.log(Math.round(percentComplete, 2) + '% downloaded');
+            }
+        };
 
-            json = object;
-            helper.add(json);
-            helper.setAnimation(json);
-            helper.setPhysics(json);
-            const audioParams = {delayTime: 0};
+        var onError = function (xhr) {
+        };
 
-            console.log('Load Music');
+        // see the license https://github.com/takahirox/MMDLoader-app#readme for these assets
+        var modelFile = 'models/1/1.pmx';
+        var vmdFiles = ['https://cdn.rawgit.com/mrdoob/three.js/r87/examples/models/mmd/vmds/wavefile_v2.vmd'];
+        var cameraFiles = ['https://cdn.rawgit.com/mrdoob/three.js/r87/examples/models/mmd/vmds/wavefile_camera.vmd'];
+        var audioFile = 'https://cdn.rawgit.com/mrdoob/three.js/r87/examples/models/mmd/audios/wavefile_short.mp3';
+        var audioParams = {delayTime: 160 * 1 / 30};
 
-            loader.loadAudio('data/muni.m4a', function (audio, listener) {
+        helper = new THREE.MMDHelper();
 
-                console.log('Load Music .......Done');
+        var loader = new THREE.MMDLoader();
 
-                listener.position.z = 1;
-                helper.setAudio(audio, listener, audioParams);
-                /*
-                 * Note: call this method after you set all animations
-                 *       including camera and audio.
-                 */
-                helper.unifyAnimationDuration();
+        loader.load(modelFile, vmdFiles, function (object) {
 
-                scene.add(audio);
-                scene.add(listener);
-                scene.add(json);
+            mesh = object;
 
-                ready = true;
-                animate();
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
 
-            }, function (xhr) {
-            }, function (xhr) {
-            });
+            helper.add(mesh);
+            helper.setAnimation(mesh);
+            helper.setPhysics(mesh);
 
-            loader2 = new THREE.ImageLoader();
-            loader2.load('data/background.png', function (image) {
-                const texLoader = new THREE.TextureLoader();
-                texLoader.load(image.src, function (loaded) {
-                    const segmentNumber = 100; // SkyBox segment
-                    tex = loaded;
-                    tex.minFilter = tex.magFilter = THREE.LinearFilter;
-                    //  You have to decide the space radius in consideration of the model -> change the model side.
-                    sphereGeometry = new THREE.SphereGeometry(16, segmentNumber, segmentNumber); // The scale on the MMDLoader side can not be changed so far
-                    const matrix = new THREE.Matrix4().makeScale(1, 1, -1);
-                    sphereGeometry.applyMatrix(matrix);
-                    lastSphereRotation = sp.sphereRotation;
-                    const sphereRotationY = new THREE.Matrix4().makeRotationY((90 + sp.sphereRotation) * Math.PI / 180.0);
-                    sphereGeometry.applyMatrix(sphereRotationY);
-                    mesh = new THREE.Mesh(sphereGeometry, new THREE.MeshBasicMaterial({map: tex, overdraw: true}));
-                    mesh.receiveShadow = false; // Object object that receives shadow (it does not create shadow by receive alone)
+            loader.loadVmds(cameraFiles, function (vmd) {
+
+                helper.setCamera(camera);
+
+                loader.pourVmdIntoCamera(camera, vmd);
+                helper.setCameraAnimation(camera);
+
+                loader.loadAudio(audioFile, function (audio, listener) {
+
+                    listener.position.z = 1;
+
+                    helper.setAudio(audio, listener, audioParams);
+
+                    /*
+                     * Note: call this method after you set all animations
+                     *       including camera and audio.
+                     */
+                    helper.unifyAnimationDuration();
+
+                    scene.add(audio);
+                    scene.add(listener);
                     scene.add(mesh);
-                });
-            });
 
-            json.position.set(sp.objectX, sp.objectY, sp.objectZ); // Object position
-            json.overdraw = true;
-            json.castShadow = false; // Object object that makes shadow (cast alone does not cast shadow) MMDLoader does not support shadow yet
+                    ready = true;
 
-            console.log('Init Done \nPlay Start');
-        });
+                }, onProgress, onError);
 
+            }, onProgress, onError);
 
-        // Renderer
-        renderer.setSize(width, height);
-        renderer.shadowMap.enabled = false;
-        document.body.appendChild(renderer.domElement);
+        }, onProgress, onError);
 
-        // Mouse controller
-        control = new THREE.OrbitControls(camera, renderer.domElement); // Control the display area
-        control.noPan = true; // Right drag (parallel viewpoint movement prohibited)
+        document.addEventListener('mousemove', onDocumentMouseMove, false);
+
+        //
+
+        window.addEventListener('resize', onWindowResize, false);
+
     }
 
-    animateCurrnetTime = 0;
+    function onWindowResize() {
+
+        windowHalfX = window.innerWidth / 2;
+        windowHalfY = window.innerHeight / 2;
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        effect.setSize(window.innerWidth, window.innerHeight);
+
+    }
+
+    function onDocumentMouseMove(event) {
+
+        mouseX = (event.clientX - windowHalfX) / 2;
+        mouseY = (event.clientY - windowHalfY) / 2;
+
+    }
+
+    //
 
     function animate() {
+
         requestAnimationFrame(animate);
-        if (ready) {
-            const delta = clock.getDelta();
-            animateCurrnetTime += delta;
-            helper.animate(delta);
-            helper.render(scene, camera);
-        } else {
-            renderer.clear();
-            renderer.render(scene, camera);
-        }
-        control.update();   // Add this and update
+        render();
+
     }
 
-    function controlbox(debug) {
-        if (debug == true){
-            $(".dg").css("display", "block");
-        }else{
-            $(".dg").css("display", "none");
+    function render() {
+
+        if (ready) {
+
+            helper.animate(clock.getDelta());
+
         }
+
+        effect.render(scene, camera);
+
     }
+
 </script>
 
 </body>
