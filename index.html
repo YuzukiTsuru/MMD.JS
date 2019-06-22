@@ -1,0 +1,318 @@
+<html lang="en">
+<meta charset="utf-8">
+<style>
+    html, body {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    body {
+        margin: 0;
+    }
+
+</style>
+<body>
+<script src="js/jquery.min.js"></script>
+<script src="js/dat.gui.js"></script>
+<script src="js/three.min.js"></script>
+<script src="js/OrbitControls.js"></script>
+<script src="js/charsetencoder.min.js"></script>
+<script src="js/ammo.min.js"></script>
+<script src="js/TGALoader.js"></script>
+<script src="js/MMDLoader.js"></script>
+<script src="js/CCDIKSolver.js"></script>
+<script src="js/MMDPhysics.js"></script>
+<script>
+
+    $(init);
+
+    let animateCurrnetTime;
+    const SceneParams = function () {
+        // Camera
+        this.cameraFov = 100;
+        this.cameraX = -0.0;
+        this.cameraY = -0.0;
+        this.cameraZ = 10.0;
+        // Light
+        this.lightIntensity = 0.4;
+        this.lightX = 100;
+        this.lightY = 100;
+        this.lightZ = -100;
+        this.lightColor = "#ffffff";
+        this.lightCastShadow = false;
+        this.lightShadowDarkness = 0;
+        // Light2
+        this.light2Intensity = 0.4;
+        this.light2X = -100;
+        this.light2Y = 100;
+        this.light2Z = -100;
+        this.light2Color = "#ffffff";
+        this.light2CastShadow = false;
+        this.light2ShadowDarkness = 0;
+        // Light3
+        this.light3Intensity = 0.25;
+        this.light3X = 300;
+        this.light3Y = 300;
+        this.light3Z = 300;
+        this.light3Color = "#ffc969";
+        this.light3CastShadow = false;
+        this.light3ShadowDarkness = 0;
+        // AmbientLight
+        this.ambientLightColor = "#d2d2d2";
+        // Object
+        this.objectX = -0.25;
+        this.objectY = -9.0;
+        this.objectZ = 0.0;
+        // Sphere
+        this.sphereRotation = 0;
+        // Operation
+        this.stop = function () {
+            action.stop();
+            animateCurrnetTime = 0;
+            $audio.get(0).pause();
+        };
+        this.start = function () {
+            action.stop();
+            animateCurrnetTime = 0;
+            $audio.get(0).load();
+            action.play();
+            $audio.get(0).play();
+        };
+    };
+
+    let ready = false;
+    let helper;
+
+    function init() {
+        // Parameter change GUI
+
+        console.log('Init With parameter');
+
+        const sp = new SceneParams();
+        const gui = new dat.GUI();
+        const cp = gui.addFolder('Camera');
+
+        cp.add(sp, 'cameraFov').min(0).max(180).onChange(function (value) {
+            camera.fov = value;
+            camera.updateProjectionMatrix();
+        });
+        cp.add(sp, 'cameraX').min(-300).max(300).step(0.5).onChange(function (value) {
+            camera.position.x = value;
+        });
+        cp.add(sp, 'cameraY').min(-300).max(300).step(0.5).onChange(function (value) {
+            camera.position.y = value;
+        });
+        cp.add(sp, 'cameraZ').min(-300).max(300).step(0.5).onChange(function (value) {
+            camera.position.z = value;
+        });
+        const l1p = gui.addFolder('Light1');
+        l1p.add(sp, 'lightIntensity').onChange(function (value) {
+            light.intensity = value;
+        });
+        l1p.add(sp, 'lightX').min(-300).max(300).step(0.5).onChange(function (value) {
+            light.position.x = value;
+        });
+        l1p.add(sp, 'lightY').min(-300).max(300).step(0.5).onChange(function (value) {
+            light.position.y = value;
+        });
+        l1p.add(sp, 'lightZ').min(-300).max(300).step(0.5).onChange(function (value) {
+            light.position.z = value;
+        });
+        l1p.addColor(sp, 'lightColor').onChange(function (value) {
+            value = value.replace('#', '0x');
+            light.color.setHex(value);
+        });
+        l1p.add(sp, 'lightCastShadow').onChange(function (value) {
+            light.castShadow = value;
+        });
+        l1p.add(sp, 'lightShadowDarkness').onChange(function (value) {
+            light.shadowDarkness = value;
+        });
+        const l2p = gui.addFolder('Light2');
+        l2p.add(sp, 'light2Intensity').onChange(function (value) {
+            light2.intensity = value;
+        });
+        l2p.add(sp, 'light2X').min(-300).max(300).step(0.5).onChange(function (value) {
+            light2.position.x = value;
+        });
+        l2p.add(sp, 'light2Y').min(-300).max(300).step(0.5).onChange(function (value) {
+            light2.position.y = value;
+        });
+        l2p.add(sp, 'light2Z').min(-300).max(300).step(0.5).onChange(function (value) {
+            light2.position.z = value;
+        });
+        l2p.addColor(sp, 'light2Color').onChange(function (value) {
+            value = value.replace('#', '0x');
+            light2.color.setHex(value);
+        });
+        l2p.add(sp, 'light2CastShadow').onChange(function (value) {
+            light2.castShadow = value;
+        });
+        l2p.add(sp, 'light2ShadowDarkness').onChange(function (value) {
+            light2.shadowDarkness = value;
+        });
+        const l3p = gui.addFolder('Light3');
+        l3p.add(sp, 'light3Intensity').onChange(function (value) {
+            light3.intensity = value;
+        });
+        l3p.add(sp, 'light3X').min(-300).max(300).step(0.5).onChange(function (value) {
+            light3.position.x = value;
+        });
+        l3p.add(sp, 'light3Y').min(-300).max(300).step(0.5).onChange(function (value) {
+            light3.position.y = value;
+        });
+        l3p.add(sp, 'light3Z').min(-300).max(300).step(0.5).onChange(function (value) {
+            light3.position.z = value;
+        });
+        l3p.addColor(sp, 'light3Color').onChange(function (value) {
+            value = value.replace('#', '0x');
+            light3.color.setHex(value);
+        });
+        l3p.add(sp, 'light3CastShadow').onChange(function (value) {
+            light3.castShadow = value;
+        });
+        l3p.add(sp, 'light3ShadowDarkness').onChange(function (value) {
+            light3.shadowDarkness = value;
+        });
+        const alp = gui.addFolder('AmbientLight');
+        alp.addColor(sp, 'ambientLightColor').onChange(function (value) {
+            value = value.replace('#', '0x');
+            ambientLight.color.setHex(value);
+        });
+        const ob = gui.addFolder('Object');
+        ob.add(sp, 'objectX').min(-300).max(300).onChange(function (value) {
+            json.position.x = value;
+        });
+        ob.add(sp, 'objectY').min(-300).max(300).onChange(function (value) {
+            json.position.y = value;
+        });
+        ob.add(sp, 'objectZ').min(-300).max(300).onChange(function (value) {
+            json.position.z = value;
+        });
+        const sph = gui.addFolder('Sphere');
+        sph.add(sp, 'sphereRotation').min(-180).max(180).onChange(function (value) {
+            mesh.rotation.y += (value - lastSphereRotation) * Math.PI / 180.0;
+            lastSphereRotation = value;
+        });
+
+        console.log('Init With parameter ......Done');
+
+        scene = new THREE.Scene();
+
+        clock = new THREE.Clock();
+
+        const width = $(window).width();
+        const height = $(window).height();
+
+        // Camera
+        camera = new THREE.PerspectiveCamera(sp.cameraFov, width / height);
+        camera.position.x = sp.cameraX;
+        camera.position.y = sp.cameraY;
+        camera.position.z = sp.cameraZ;
+        scene.add(camera);
+
+
+        // Light and Shadow
+        light = new THREE.DirectionalLight(eval(sp.lightColor.replace('#', '0x')), sp.lightIntensity);
+        light.position.set(sp.lightX, sp.lightY, sp.lightZ);
+        light.castShadow = sp.lightCastShadow; // Shadow glory
+        light.shadowMapWidth = 2048; // Shadow mapping detail
+        light.shadowMapHeight = 2048; // Shadow mapping detail
+        light.shadowDarkness = sp.lightShadowDarkness; // Darkness of shadow
+        scene.add(light);
+        light2 = new THREE.DirectionalLight(eval(sp.light2Color.replace('#', '0x')), sp.light2Intensity);
+        light2.position.set(sp.light2X, sp.light2Y, sp.light2Z);
+        light2.castShadow = sp.light2CastShadow; // Make the light cast a shadow
+        light2.shadowMapWidth = 2048; // Shadow mapping detail
+        light2.shadowMapHeight = 2048; // Shadow mapping detail
+        light2.shadowDarkness = sp.light2ShadowDarkness; // Darkness of shadow
+        scene.add(light2);
+        light3 = new THREE.DirectionalLight(eval(sp.light3Color.replace('#', '0x')), sp.light3Intensity);
+        light3.position.set(sp.light3X, sp.light3Y, sp.light3Z);
+        light3.castShadow = sp.light3CastShadow; // Make the light cast a shadow
+        light3.shadowMapWidth = 2048; // Shadow mapping detail
+        light3.shadowMapHeight = 2048; // Shadow mapping detail
+        light3.shadowDarkness = sp.light3ShadowDarkness; // Darkness of shadow
+        scene.add(light3);
+        ambientLight = new THREE.AmbientLight(eval(sp.ambientLightColor.replace('#', '0x')));
+        scene.add(ambientLight); // Ambient light
+
+        // Renderer
+        renderer = new THREE.WebGLRenderer();
+
+        // object load
+        helper = new THREE.MMDHelper(renderer);
+        loader = new THREE.MMDLoader();
+        console.log('Load model');
+
+        loader.load('models/box_len_1.2/box_len.pmd', ['muni.vmd'], function (object) {
+
+            console.log('Load model ......Done');
+
+            json = object;
+            helper.add(json);
+            helper.setAnimation(json);
+            helper.setPhysics(json);
+            const audioParams = {delayTime: 0};
+
+            console.log('Load Music');
+
+            loader.loadAudio('muni.m4a', function (audio, listener) {
+
+                console.log('Load Music .......Done');
+
+                listener.position.z = 1;
+                helper.setAudio(audio, listener, audioParams);
+                /*
+                 * Note: call this method after you set all animations
+                 *       including camera and audio.
+                 */
+                helper.unifyAnimationDuration();
+
+                scene.add(audio);
+                scene.add(listener);
+                scene.add(json);
+
+                ready = true;
+                animate();
+
+            }, function (xhr) {
+            }, function (xhr) {
+            });
+
+            json.position.set(sp.objectX, sp.objectY, sp.objectZ); // Object position
+            json.overdraw = true;
+            json.castShadow = false; // Object object that makes shadow (cast alone does not cast shadow) MMDLoader does not support shadow yet
+
+            console.log('Init Done \nPlay Start');
+        });
+
+        // Renderer
+        renderer.setSize(width, height);
+        renderer.shadowMap.enabled = false;
+        document.body.appendChild(renderer.domElement);
+
+        // Mouse controller
+        control = new THREE.OrbitControls(camera, renderer.domElement); // Control the display area
+        control.noPan = true; // Right drag (parallel viewpoint movement prohibited)
+    }
+
+    animateCurrnetTime = 0;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        if (ready) {
+            const delta = clock.getDelta();
+            animateCurrnetTime += delta;
+            helper.animate(delta);
+            helper.render(scene, camera);
+        } else {
+            renderer.clear();
+            renderer.render(scene, camera);
+        }
+        control.update();   // Add this and update
+    }
+</script>
+
+</body>
+</html>
