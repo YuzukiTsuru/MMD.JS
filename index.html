@@ -26,7 +26,7 @@
 
 <body>
 <div id="info">
-    Copyright &copy
+    MMD Copyright &copy
     <a href="https://www.nicovideo.jp/watch/sm21606268" target="_blank">Dance Data</a>
     <a href="https://www.nicovideo.jp/watch/sm21606268" target="_blank">Audio Data</a>
     <a href="https://www.nicovideo.jp/watch/sm21606268" target="_blank">Camera Data</a>
@@ -70,14 +70,15 @@
 
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
 
-        // scene
+        // Scene
 
         scene = new THREE.Scene();
 
         const ground = new THREE.Mesh(
             new THREE.PlaneBufferGeometry(100, 100),
-            new THREE.MeshPhongMaterial({color: 0xdddddd})
+            new THREE.MeshPhongMaterial({color: 0xffffff})
         );
+
         ground.rotation.x = -90 * Math.PI / 180;
         ground.receiveShadow = true;
         scene.add(ground);
@@ -122,14 +123,18 @@
         };
 
         let onError = function (xhr) {
-            console.log("ERROR" + xhr)
+            console.log("ERROR " + xhr)
         };
 
-        const modelFile = 'models/1/1.pmx';
+        const modelFile = 'models/あさぬ式鏡音レン(V4X)ver3_04/あさぬ式鏡音レン(V4X)ver3_04.pmx';
+
         const vmdFiles = ['data/muni.vmd'];
         const cameraFiles = ['data/munic.vmd'];
         const audioFile = 'data/muni.m4a';
-        const audioParams = {delayTime: 0};
+
+        const audioParams = {
+            delayTime: 0
+        };
 
         helper = new THREE.MMDHelper();
 
@@ -140,7 +145,7 @@
             mesh = object;
 
             mesh.castShadow = true;
-            mesh.receiveShadow = true;
+            mesh.receiveShadow = false;
 
             helper.add(mesh);
             helper.setAnimation(mesh);
