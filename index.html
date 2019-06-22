@@ -23,11 +23,12 @@
 <script src="js/CCDIKSolver.js"></script>
 <script src="js/MMDPhysics.js"></script>
 <script>
-
     $(init);
 
     let animateCurrnetTime;
     const SceneParams = function () {
+        // Control
+        this.debug = false;
         // Camera
         this.cameraFov = 100;
         this.cameraX = -0.0;
@@ -91,6 +92,9 @@
         const sp = new SceneParams();
         const gui = new dat.GUI();
         const cp = gui.addFolder('Camera');
+
+        // control box show/hide
+        controlbox(sp.debug);
 
         cp.add(sp, 'cameraFov').min(0).max(180).onChange(function (value) {
             camera.fov = value;
@@ -332,6 +336,14 @@
             renderer.render(scene, camera);
         }
         control.update();   // Add this and update
+    }
+
+    function controlbox(debug) {
+        if (debug == true){
+            $(".dg").css("display", "block");
+        }else{
+            $(".dg").css("display", "none");
+        }
     }
 </script>
 
