@@ -47,14 +47,14 @@
     let mesh, camera, scene, renderer, effect;
     let helper;
 
-    var ready = false;
+    let ready = false;
 
-    var mouseX = 0, mouseY = 0;
+    let mouseX = 0, mouseY = 0;
 
-    var windowHalfX = window.innerWidth / 2;
-    var windowHalfY = window.innerHeight / 2;
+    let windowHalfX = window.innerWidth / 2;
+    let windowHalfY = window.innerHeight / 2;
 
-    var clock = new THREE.Clock();
+    const clock = new THREE.Clock();
 
     init();
     animate();
@@ -70,7 +70,7 @@
 
         scene = new THREE.Scene();
 
-        var ground = new THREE.Mesh(
+        const ground = new THREE.Mesh(
             new THREE.PlaneBufferGeometry(100, 100),
             new THREE.MeshPhongMaterial({color: 0xdddddd})
         );
@@ -78,14 +78,14 @@
         ground.receiveShadow = true;
         scene.add(ground);
 
-        var ambient = new THREE.AmbientLight(0x666666);
+        const ambient = new THREE.AmbientLight(0x666666);
         scene.add(ambient);
 
-        var directionalLight = new THREE.DirectionalLight(0x887766);
+        const directionalLight = new THREE.DirectionalLight(0x887766);
         directionalLight.position.set(-15, 15, 15);
         scene.add(directionalLight);
 
-        //
+        // Render
 
         renderer = new THREE.WebGLRenderer({antialias: true});
         renderer.setPixelRatio(window.devicePixelRatio);
@@ -110,26 +110,25 @@
         renderer.shadowMap.renderReverseSided = false;
         directionalLight.shadow.bias = -0.001;
 
-        var onProgress = function (xhr) {
+        const onProgress = function (xhr) {
             if (xhr.lengthComputable) {
                 var percentComplete = xhr.loaded / xhr.total * 100;
                 console.log(Math.round(percentComplete, 2) + '% downloaded');
             }
         };
 
-        var onError = function (xhr) {
+        let onError = function (xhr) {
         };
 
-        // see the license https://github.com/takahirox/MMDLoader-app#readme for these assets
-        var modelFile = 'models/1/1.pmx';
-        var vmdFiles = ['https://cdn.rawgit.com/mrdoob/three.js/r87/examples/models/mmd/vmds/wavefile_v2.vmd'];
-        var cameraFiles = ['https://cdn.rawgit.com/mrdoob/three.js/r87/examples/models/mmd/vmds/wavefile_camera.vmd'];
-        var audioFile = 'https://cdn.rawgit.com/mrdoob/three.js/r87/examples/models/mmd/audios/wavefile_short.mp3';
-        var audioParams = {delayTime: 160 * 1 / 30};
+        const modelFile = 'models/sour/White.pmx';
+        const vmdFiles = ['data/muni.vmd'];
+        const cameraFiles = ['https://cdn.rawgit.com/mrdoob/three.js/r87/examples/models/mmd/vmds/wavefile_camera.vmd'];
+        const audioFile = 'data/muni.m4a';
+        const audioParams = {delayTime: 0};
 
         helper = new THREE.MMDHelper();
 
-        var loader = new THREE.MMDLoader();
+        const loader = new THREE.MMDLoader();
 
         loader.load(modelFile, vmdFiles, function (object) {
 
@@ -159,6 +158,7 @@
                      * Note: call this method after you set all animations
                      *       including camera and audio.
                      */
+
                     helper.unifyAnimationDuration();
 
                     scene.add(audio);
@@ -175,7 +175,7 @@
 
         document.addEventListener('mousemove', onDocumentMouseMove, false);
 
-        //
+        // Resize Window
 
         window.addEventListener('resize', onWindowResize, false);
 
@@ -200,7 +200,7 @@
 
     }
 
-    //
+    // Start Play
 
     function animate() {
 
@@ -210,15 +210,10 @@
     }
 
     function render() {
-
         if (ready) {
-
             helper.animate(clock.getDelta());
-
         }
-
         effect.render(scene, camera);
-
     }
 
 </script>
