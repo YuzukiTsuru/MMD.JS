@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Monospace;
-            background-color: #fff;
+            background-color: #67ff86;
             color: #000;
             margin: 0px;
             overflow: hidden;
@@ -53,6 +53,8 @@
 
     let ready = false;
 
+    let ground = false;
+
     let mouseX = 0, mouseY = 0;
 
     let windowHalfX = window.innerWidth / 2;
@@ -74,18 +76,20 @@
 
         scene = new THREE.Scene();
 
-        const ground = new THREE.Mesh(
-            new THREE.PlaneBufferGeometry(100, 100),
-            new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true, transparent: true}),
-            /*
-            For True Ground
-            new THREE.MeshPhongMaterial({color: 0xffffff}),
-             */
-        );
+        if (ground) {
+            const ground = new THREE.Mesh(
+                new THREE.PlaneBufferGeometry(100, 100),
+                new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true, transparent: true}),
+                /*
+                For True Ground
+                new THREE.MeshPhongMaterial({color: 0xffffff}),
+                 */
+            );
 
-        ground.rotation.x = -90 * Math.PI / 180;
-        ground.receiveShadow = true;
-        scene.add(ground);
+            ground.rotation.x = -90 * Math.PI / 180;
+            ground.receiveShadow = true;
+            scene.add(ground);
+        }
 
         const ambient = new THREE.AmbientLight(0x666666);
         scene.add(ambient);
@@ -96,10 +100,15 @@
 
         // Render
 
-        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+        // If you want to transport background
+        renderer.setClearAlpha(0);
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
+        /*
+        If you want to add BackGround Color
         renderer.setClearColor(new THREE.Color(0xffffff));
+        */
         container.appendChild(renderer.domElement);
 
         effect = new THREE.OutlineEffect(renderer);
