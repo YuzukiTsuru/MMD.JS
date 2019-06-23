@@ -19,7 +19,7 @@
             top: 10px;
             width: 100%;
             text-align: center;
-            display: block;
+            display: none;
         }
     </style>
 </head>
@@ -76,7 +76,11 @@
 
         const ground = new THREE.Mesh(
             new THREE.PlaneBufferGeometry(100, 100),
-            new THREE.MeshPhongMaterial({color: 0xffffff})
+            new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true, transparent: true}),
+            /*
+            For True Ground
+            new THREE.MeshPhongMaterial({color: 0xffffff}),
+             */
         );
 
         ground.rotation.x = -90 * Math.PI / 180;
