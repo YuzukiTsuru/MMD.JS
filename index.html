@@ -122,15 +122,16 @@
             }
         };
 
-        let onError = function (xhr) {
+        const onError = function (xhr) {
             console.log("ERROR " + xhr)
         };
 
-        const modelFile = 'models/あさぬ式鏡音レン(V4X)ver3_04/あさぬ式鏡音レン(V4X)ver3_04.pmx';
+        const modelFile = 'models/1/1.pmx';
 
         const vmdFiles = ['data/muni.vmd'];
         const cameraFiles = ['data/munic.vmd'];
         const audioFile = 'data/muni.m4a';
+        const edge = false;
 
         const audioParams = {
             delayTime: 0
@@ -142,6 +143,7 @@
 
         loader.load(modelFile, vmdFiles, function (object) {
 
+            effect.enabled = edge;
             mesh = object;
 
             mesh.castShadow = true;
@@ -213,10 +215,8 @@
     // Start Play
 
     function animate() {
-
         requestAnimationFrame(animate);
         render();
-
     }
 
     function render() {
