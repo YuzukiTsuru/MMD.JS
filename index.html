@@ -60,6 +60,8 @@
     let windowHalfX = window.innerWidth / 2;
     let windowHalfY = window.innerHeight / 2;
 
+    let edge = false;
+
     const clock = new THREE.Clock();
 
     init();
@@ -144,7 +146,6 @@
         const vmdFiles = ['data/muni.vmd'];
         const cameraFiles = ['data/Stay.vmd'];
         const audioFile = 'data/muni.m4a';
-        const edge = false;
 
         const audioParams = {
             delayTime: 0
